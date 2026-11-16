@@ -7,6 +7,8 @@ def calcular_juros_simples(
     anos: int
 ) -> float:
     """Calcula o montante final obtido por juros simples."""
+    if capital < 0 or anos < 0:
+        raise ValueError("Capital e tempo devem ser não negativos.")
     juros = capital * (taxa_anual / 100) * anos
     return capital + juros
 
@@ -17,6 +19,8 @@ def calcular_juros_compostos(
     anos: int
 ) -> float:
     """Calcula o montante final obtido por juros compostos."""
+    if capital < 0 or anos < 0:
+        raise ValueError("Capital e tempo devem ser não negativos.")
     montante = capital * ((1 + (taxa_anual / 100)) ** anos)
     return montante
 
@@ -28,6 +32,8 @@ def calcular_aposentadoria(
     taxa_anual: float
 ) -> float:
     """Calcula o patrimônio acumulado para aposentadoria."""
+    if patrimonio_atual < 0 or aporte_mensal < 0 or anos < 0:
+        raise ValueError("Patrimônio, aporte e tempo devem ser não negativos.")
     meses = anos * 12
     taxa_mensal = (taxa_anual / 100) / 12
     saldo = patrimonio_atual
@@ -40,6 +46,8 @@ def calcular_aposentadoria(
 
 def calcular_irrf(salario_bruto: float) -> float:
     """Calcula a alíquota simplificada de Imposto de Renda Retido na Fonte."""
+    if salario_bruto < 0:
+        raise ValueError("O salário deve ser não negativo.")
     if salario_bruto <= 2259.20:
         return 0.0
     elif salario_bruto <= 2826.65:
@@ -56,6 +64,10 @@ def calcular_parcela_price(
     meses: int
 ) -> float:
     """Calcula o valor da parcela fixa em um financiamento pela Tabela Price."""
+    if valor_emprestimo < 0 or meses <= 0:
+        raise ValueError("Empréstimo e prazo devem ser válidos.")
+    if taxa_mensal == 0:
+        return valor_emprestimo / meses
     i = taxa_mensal / 100
     parcela = (
         valor_emprestimo
@@ -71,6 +83,12 @@ def calcular_valor_futuro(
     meses: int
 ) -> float:
     """Calcula o valor futuro acumulado com aportes mensais recorrentes."""
+    if aporte_mensal < 0 or meses < 0:
+        raise ValueError("Aporte e prazo devem ser não negativos.")
+    if meses == 0:
+        return 0.0
+    if taxa_mensal == 0:
+        return aporte_mensal * meses
     i = taxa_mensal / 100
     vf = aporte_mensal * (((1 + i) ** meses - 1) / i)
     return vf
@@ -82,11 +100,17 @@ def calcular_depreciacao_linear(
     vida_util_anos: int
 ) -> float:
     """Calcula o valor de depreciação anual de um ativo corporativo."""
+    if vida_util_anos <= 0:
+        raise ValueError("A vida útil deve ser maior que zero.")
+    if valor_residual > valor_inicial:
+        raise ValueError("O valor residual não pode superar o valor inicial.")
     return (valor_inicial - valor_residual) / vida_util_anos
 
 
 def converter_taxa_anual_para_mensal(taxa_anual: float) -> float:
     """Converte uma taxa de juros anual equivalente para taxa mensal."""
+    if taxa_anual <= -100:
+        raise ValueError("A taxa anual deve ser maior que -100%.")
     return (((1 + (taxa_anual / 100)) ** (1 / 12)) - 1) * 100
 
 
@@ -95,6 +119,8 @@ def calcular_margem_liquida(
     custos_totais: float
 ) -> float:
     """Calcula a margem de lucro líquida percentual de uma operação."""
+    if receita_total <= 0 or custos_totais < 0:
+        raise ValueError("Receita e custos devem ser válidos.")
     lucro = receita_total - custos_totais
     return (lucro / receita_total) * 100
 
@@ -104,68 +130,10 @@ def calcular_rendimento_real(
     inflacao: float
 ) -> float:
     """Calcula a taxa de retorno real descontada a inflação do período."""
+    if inflacao <= -100:
+        raise ValueError("A inflação deve ser maior que -100%.")
     retorno_real = (
         (1 + (ganho_nominal / 100))
         / (1 + (inflacao / 100))
     ) - 1
     return retorno_real * 100
-
-
-if __name__ == "__main__":
-    print("Iniciando o sistema FinCalc...")
-
-    montante = calcular_juros_simples(1000.0, 5.0, 2)
-    print(f"Juros Simples: R$ {montante:.2f}")
-
-    montante_comp = calcular_juros_compostos(1000.0, 5.0, 2)
-    print(f"Juros Compostos: R$ {montante_comp:.2f}")
-
-    patrimonio = calcular_aposentadoria(
-        10000.0,
-        500.0,
-        20,
-        6.0
-    )
-    print(
-        f"Patrimônio Estimado para Aposentadoria: "
-        f"R$ {patrimonio:.2f}"
-    )
-
-    irrf = calcular_irrf(3000.00)
-    print(f"IRRF para salário de R$ 3000.00: R$ {irrf:.2f}")
-
-    parcela = calcular_parcela_price(
-        10000.0,
-        1.0,
-        12
-    )
-    print(f"Parcela Tabela Price: R$ {parcela:.2f}")
-
-    valor_futuro = calcular_valor_futuro(
-        500.0,
-        1.0,
-        12
-    )
-    print(f"Valor Futuro com Aportes: R$ {valor_futuro:.2f}")
-
-    depreciacao = calcular_depreciacao_linear(
-        50000.0,
-        5000.0,
-        5
-    )
-    print(f"Depreciação Linear Anual: R$ {depreciacao:.2f}")
-
-    taxa_mensal = converter_taxa_anual_para_mensal(12.0)
-    print(f"Taxa Mensal Equivalente: {taxa_mensal:.4f}%")
-
-    margem = calcular_margem_liquida(
-        100000.0,
-        75000.0
-    )
-    print(f"Margem Líquida: {margem:.2f}%")
-
-    rendimento_real = calcular_rendimento_real(
-        10.0,
-        4.0
-    )
-    print(f"Rendimento Real: {rendimento_real:.2f}%")
